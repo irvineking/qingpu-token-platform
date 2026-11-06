@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>青浦区企业级算力Token聚合调度与补贴监管平台 · 需求梳理 v0.2</title>
+<script src="https://fastly.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  :root{
+    --navy-900:#0B2545;
+    --navy-700:#13315C;
+    --blue-600:#1E40AF;
+    --blue-500:#2563EB;
+    --blue-100:#DBEAFE;
+    --gold:#C9A961;
+    --gold-soft:#E8D9B5;
+    --bg:#F5F7FA;
+    --line:#E2E8F0;
+    --ink:#0F172A;
+    --ink-2:#475569;
+    --ink-3:#94A3B8;
+    --white:#FFFFFF;
+    --ok:#047857;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;
+    font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+  /* ===== HERO ===== */
+  .hero{background:linear-gradient(135deg,var(--navy-900) 0%,var(--navy-700) 60%,#1B4B8F 100%);
+    color:#fff;padding:64px 0 56px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;
+    border:1px solid rgba(255,255,255,.08);border-radius:50%}
+  .hero::before{content:"";position:absolute;right:-60px;top:-60px;width:300px;height:300px;
+    border:1px solid rgba(201,169,97,.25);border-radius:50%}
+  .hero .tag{display:inline-block;font-size:12px;letter-spacing:2px;color:var(--gold);
+    border:1px solid var(--gold);padding:4px 12px;border-radius:2px;margin-bottom:22px}
+  .hero h1{font-size:34px;line-height:1.3;font-weight:700;letter-spacing:1px;max-width:880px}
+  .hero h1 em{color:var(--gold);font-style:normal}
+  .hero .sub{margin-top:18px;font-size:15px;color:rgba(255,255,255,.78);max-width:780px}
+  .hero .meta{margin-top:28px;font-size:13px;color:rgba(255,255,255,.55)}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.12);margin-top:40px;border-radius:4px;overflow:hidden}
+  .stat{background:var(--navy-900);padding:20px 22px}
+  .stat .num{font-size:28px;font-weight:700;color:var(--gold);font-family:"DIN Alternate",Impact,sans-serif}
+  .stat .lbl{font-size:12px;color:rgba(255,255,255,.7);margin-top:4px;letter-spacing:1px}
+
+  /* ===== SECTION通用 ===== */
+  section{padding:56px 0 8px}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:28px;
+    padding-bottom:14px;border-bottom:2px solid var(--navy-900)}
+  .sec-no{font-family:"DIN Alternate",Impact,sans-serif;font-size:14px;color:var(--gold);
+    letter-spacing:2px;font-weight:700}
+  .sec-title{font-size:24px;font-weight:700;color:var(--navy-900)}
+  .sec-desc{font-size:13px;color:var(--ink-3);margin-left:auto}
+
+  /* ===== 定位 ===== */
+  .positioning{background:var(--white);border-left:4px solid var(--gold);padding:24px 28px;
+    border-radius:0 6px 6px 0;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+  .positioning p{font-size:16px;color:var(--ink);line-height:1.9}
+  .positioning .key{color:var(--blue-600);font-weight:600}
+
+  /* ===== 角色 ===== */
+  .roles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .role{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:22px;
+    border-top:3px solid var(--blue-600)}
+  .role.gov{border-top-color:var(--gold)}
+  .role.op{border-top-color:var(--navy-700)}
+  .role .r-tag{font-size:11px;letter-spacing:1px;color:var(--ink-3);margin-bottom:8px}
+  .role h4{font-size:16px;color:var(--navy-900);margin-bottom:10px}
+  .role p{font-size:13px;color:var(--ink-2);line-height:1.7}
+
+  /* ===== 四大模块 ===== */
+  .modules{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .mod{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:26px;
+    transition:transform .2s,box-shadow .2s}
+  .mod:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(11,37,69,.08)}
+  .mod-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .mod-ico{width:44px;height:44px;background:var(--navy-900);color:var(--gold);
+    display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0}
+  .mod-ico svg{width:22px;height:22px}
+  .mod-head h3{font-size:18px;color:var(--navy-900)}
+  .mod-head .m-no{font-size:11px;color:var(--ink-3);letter-spacing:1px}
+  .mod ul{list-style:none;margin-top:8px}
+  .mod li{font-size:13.5px;color:var(--ink-2);padding:6px 0 6px 18px;position:relative;line-height:1.7}
+  .mod li::before{content:"";position:absolute;left:0;top:14px;width:8px;height:2px;background:var(--gold)}
+  .mod li b{color:var(--ink);font-weight:600}
+
+  /* ===== 智能路由流程 ===== */
+  .route-box{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:32px}
+  .flow{display:grid;grid-template-columns:1fr auto 1.2fr auto 1fr auto 1fr;align-items:center;gap:10px}
+  .flow-node{background:var(--blue-100);border:1px solid var(--blue-500);border-radius:6px;
+    padding:14px 10px;text-align:center;font-size:13px;color:var(--navy-900);font-weight:500}
+  .flow-node.cheap{background:#ECFDF5;border-color:#10B981;color:#065F46}
+  .flow-node.exp{background:#FEF3C7;border-color:#D97706;color:#92400E}
+  .flow-node .sub{display:block;font-size:11px;color:var(--ink-3);font-weight:400;margin-top:4px}
+  .flow-arrow{color:var(--ink-3);font-size:20px;font-weight:300}
+  #costChart{width:100%;height:320px;margin-top:24px}
+
+  /* ===== 补贴闭环 ===== */
+  .loop{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:8px;
+    background:var(--white);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .loop-step{padding:22px 18px;border-right:1px dashed var(--line);position:relative}
+  .loop-step:last-child{border-right:none}
+  .loop-step .n{width:28px;height:28px;border-radius:50%;background:var(--navy-900);color:var(--gold);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:10px}
+  .loop-step h5{font-size:14px;color:var(--navy-900);margin-bottom:6px}
+  .loop-step p{font-size:12px;color:var(--ink-2);line-height:1.6}
+
+  /* ===== 必补能力 ===== */
+  .must{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .must-item{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:18px 20px;
+    display:flex;gap:12px;align-items:flex-start}
+  .must-item .dot{width:8px;height:8px;background:var(--gold);border-radius:50%;margin-top:7px;flex-shrink:0}
+  .must-item h5{font-size:14px;color:var(--navy-900);margin-bottom:4px}
+  .must-item p{font-size:12.5px;color:var(--ink-2);line-height:1.6}
+
+  .opt-badge{display:inline-block;font-size:11px;letter-spacing:1px;color:var(--navy-900);
+    background:var(--gold-soft);border:1px solid var(--gold);padding:1px 8px;border-radius:2px;
+    margin-left:8px;vertical-align:middle;font-weight:600}
+  .opt-badge.base{background:var(--blue-100);border-color:var(--blue-500);color:var(--blue-600)}
+  .options{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .option{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:24px 22px;position:relative}
+  .option.featured{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+  .option .o-kicker{font-size:11px;letter-spacing:1.5px;color:var(--ink-3);margin-bottom:8px}
+  .option h3{font-size:18px;color:var(--navy-900);margin-bottom:10px}
+  .option .o-desc{font-size:13.5px;color:var(--ink-2);margin-bottom:14px;line-height:1.7}
+  .option ul{list-style:none}
+  .option li{font-size:13.5px;color:var(--ink-2);padding:5px 0 5px 16px;position:relative}
+  .option li::before{content:"";position:absolute;left:0;top:13px;width:8px;height:2px;background:var(--gold)}
+  .option .depend{margin-top:14px;font-size:12px;color:var(--ink-3);background:#F8FAFC;border-radius:4px;padding:8px 10px}
+  .combos{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+  .combo{background:var(--navy-900);color:#fff;border-radius:8px;padding:18px 20px}
+  .combo h4{color:var(--gold);font-size:15px;margin-bottom:8px}
+  .combo p{font-size:13px;color:rgba(255,255,255,.82);line-height:1.7}
+  .combo .bits{font-size:12px;color:rgba(255,255,255,.55);margin-top:8px;letter-spacing:.5px}
+
+  /* ===== 待确认 ===== */
+  .todo{background:var(--navy-900);color:#fff;border-radius:8px;padding:32px}
+  .todo h3{font-size:20px;color:var(--gold);margin-bottom:20px}
+  .todo ol{list-style:none;counter-reset:q}
+  .todo li{counter-increment:q;padding:12px 0 12px 48px;position:relative;border-bottom:1px solid rgba(255,255,255,.08);
+    font-size:14px;color:rgba(255,255,255,.88);line-height:1.7}
+  .todo li:last-child{border-bottom:none}
+  .todo li::before{content:"Q"counter(q);position:absolute;left:0;top:12px;width:32px;height:24px;
+    background:var(--gold);color:var(--navy-900);font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;border-radius:3px;font-family:monospace}
+  .todo li b{color:#fff}
+
+  footer{padding:36px 0 48px;text-align:center;color:var(--ink-3);font-size:12px;letter-spacing:1px}
+
+  /* ===== 响应式 ===== */
+  @media (max-width:900px){
+    .stats,.roles,.must{grid-template-columns:repeat(2,1fr)}
+    .modules,.options,.combos{grid-template-columns:1fr}
+    .loop{grid-template-columns:1fr 1fr}
+    .loop-step{border-right:none;border-bottom:1px dashed var(--line)}
+    .flow{grid-template-columns:1fr;gap:8px}
+    .flow-arrow{transform:rotate(90deg);text-align:center}
+    .hero h1{font-size:26px}
+    .options,.combos{grid-template-columns:1fr}
+    .sec-desc{display:none}
+  }
+  @media (max-width:560px){
+    .stats,.roles,.must,.loop{grid-template-columns:1fr}
+    .hero{padding:44px 0 40px}
+    .hero h1{font-size:22px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <span class="tag">青浦区政府立项 · 需求梳理 v0.1</span>
+    <h1>企业级算力 <em>Token 聚合调度</em><br>与补贴监管一体化平台</h1>
+    <p class="sub">面向青浦区注册企业，底座提供一个账号接入主流大模型 API 与智能路由降本。政务级计量结算、补贴发放通道作为可选项按需开通，既可只做企业调度中台，也可升级为区级补贴监管平台。</p>
+    <div class="meta">文档版本 v0.2 ｜ 2026-11-06</div>
+
+    <div class="stats">
+      <div class="stat"><div class="num">1+2</div><div class="lbl">底座 + 可选政务模块</div></div>
+      <div class="stat"><div class="num">10+</div><div class="lbl">首期接入模型</div></div>
+      <div class="stat"><div class="num">5 维</div><div class="lbl">用量审计粒度</div></div>
+      <div class="stat"><div class="num">3 年</div><div class="lbl">日志留存周期</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 01 项目定位 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-no">01</span>
+      <h2 class="sec-title">项目定位</h2>
+      <span class="sec-desc">一句话讲清楚平台是什么</span>
+    </div>
+    <div class="positioning">
+      <p>
+        本质是 <span class="key">LLM API 聚合网关</span>。
+        <span class="key">政务级计量结算</span>与<span class="key">补贴发放通道</span>不捆绑进每一户企业，而是作为可独立开通的政务能力选项。
+        底座让区内企业<b>一个账号、一个 API Key</b> 调用主流大模型，并通过<b>智能路由</b>把任务分给性价比更合适的模型；
+        若区里需要政策兑付与监管，再叠加计量结算与补贴通道，实现<b>补贴精准投放、用量全程可审计</b>。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 角色分工 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-no">02</span>
+      <h2 class="sec-title">四方角色与权责</h2>
+      <span class="sec-desc">谁在用、谁付钱、谁监管</span>
+    </div>
+    <div class="roles">
+      <div class="role gov">
+        <div class="r-tag">监管方 / 出资方</div>
+        <h4>青浦区科委 · 经信委 · 大数据中心</h4>
+        <p>查看全区用量大盘、发放补贴额度、配置模型白名单、审计异常调用、向上汇报政绩。</p>
+      </div>
+      <div class="role">
+        <div class="r-tag">付费方 / 使用方</div>
+        <h4>青浦注册法人企业</h4>
+        <p>登录后用统一 API Key 调模型，查看账单与用量明细，在线申请补贴、抵扣支出。</p>
+      </div>
+      <div class="role op">
+        <div class="r-tag">运营方 / 中间层</div>
+        <h4>平台运营主体</h4>
+        <p>统一对接上游模型、执行智能路由、出具账单结算、提供 7×24 客服与 SLA 保障。</p>
+      </div>
+      <div class="role">
+        <div class="r-tag">被聚合方</div>
+        <h4>上游模型供应商</h4>
+        <p>DeepSeek、通义千问、豆包、智谱、GPT、Claude、Gemini，以及青浦本地智算节点私有化模型。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 四大核心模块 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-no">03</span>
+      <h2 class="sec-title">四大核心功能模块</h2>
+      <span class="sec-desc">需求主体框架</span>
+    </div>
+    <div class="modules">
+
+      <div class="mod">
+        <div class="mod-head">
+          <div class="mod-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+          <div><div class="m-no">MODULE 01 · 底座</div><h3>统一 Token 接入与单点登录</h3></div>
+        </div>
+        <ul>
+          <li><b>一个平台账号</b> → 自动获得统一 API Key / SDK / Web 控制台</li>
+          <li>聚合国产合规模型：DeepSeek V3/R1、通义千问、豆包、智谱 GLM、文心、Kimi、MiniMax</li>
+          <li>海外模型走合规通道：GPT-4o/o1、Claude 3.5/3.7、Gemini 2.0</li>
+          <li>对接青浦本地智算节点与私有化开源模型实例</li>
+          <li>OpenAI 兼容协议，企业原代码改一行 base_url 即可切换</li>
+          <li>企业子账号体系（多部门 / 多员工）+ 一网通办法人 SSO</li>
+        </ul>
+      </div>
+
+      <div class="mod">
+        <div class="mod-head">
+          <div class="mod-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 9v6a3 3 0 003 3h6"/></svg></div>
+          <div><div class="m-no">MODULE 02 · 底座</div><h3>智能路由与任务拆分</h3></div>
+        </div>
+        <ul>
+          <li><b>静态路由</b>：企业自行指定场景默认模型</li>
+          <li><b>动态路由（核心卖点）</b>：小模型做任务理解与复杂度评估 → 自动拆子任务 → 简单任务走便宜模型、复杂推理走强模型 → 结果聚合返回</li>
+          <li>每笔请求的<b>路由决策、token 消耗、节省金额</b>对用户全程可见</li>
+          <li>超时 / 限流 / 模型故障自动降级，业务不中断</li>
+        </ul>
+      </div>
+
+      <div class="mod">
+        <div class="mod-head">
+          <div class="mod-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div><div class="m-no">MODULE 03 · 可选项</div><h3>政务级计量结算 <span class="opt-badge">OPTION</span></h3></div>
+        </div>
+        <ul>
+          <li><b>五维计量</b>：企业 / 部门 / 员工 / API Key / 模型 / 时段</li>
+          <li>token 级精确计费（prompt + completion 分开），自动出日 / 月账单</li>
+          <li>每一笔请求全留痕：调用方、时间、模型、输入输出摘要、费用、是否命中补贴</li>
+          <li>敏感词过滤 + 异常调用告警（如小时级异常烧钱）</li>
+          <li>三账户余额并行：现金余额 / 政府补贴额度 / 赠送额度</li>
+        </ul>
+      </div>
+
+      <div class="mod">
+        <div class="mod-head">
+          <div class="mod-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+          <div><div class="m-no">MODULE 04 · 可选项</div><h3>补贴发放通道 <span class="opt-badge">OPTION</span></h3></div>
+        </div>
+        <ul>
+          <li>政府后台按企业类型（高新 / 专精特新 / 规上 / 初创）配置差异化补贴额度</li>
+          <li>按模型倾斜：用国产模型补贴比例高，引导信创</li>
+          <li>企业在线提交资质 → 政府在线审核 → 自动发放补贴额度</li>
+          <li>每笔消耗自动抵扣补贴，余额、已用、剩余全透明</li>
+          <li>政府大屏：补贴发了多少、发给谁、用在什么场景、满意度如何</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03b 建设选项 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-no">03B</span>
+      <h2 class="sec-title">建设与开通选项</h2>
+      <span class="sec-desc">底座必选，政务能力按需叠加</span>
+    </div>
+    <div class="options">
+      <div class="option">
+        <div class="o-kicker">BASE · 必选</div>
+        <h3>统一调度网关</h3>
+        <p class="o-desc">所有租户默认开通。一个入口聚合授权模型，完成登录、路由、限流与基础用量展示。</p>
+        <ul>
+          <li>统一 API Key / SDK / 控制台，OpenAI 兼容协议</li>
+          <li>国产合规模型 + 经评估后再开的合规出境通道</li>
+          <li>可对接青浦本地智算节点与私有化实例</li>
+          <li>智能路由：简单任务走便宜模型，复杂推理走强模型</li>
+          <li>企业子账号与一网通办法人 SSO</li>
+        </ul>
+      </div>
+      <div class="option featured">
+        <div class="o-kicker">OPTION A · 可选</div>
+        <h3>政务级计量结算</h3>
+        <p class="o-desc">面向需要审计、分摊和对公出账的国企、集团及区级监管场景。把每一次调用变成可复核的财政与企业账单。</p>
+        <ul>
+          <li>五维计量：企业 / 部门 / 员工 / API Key / 模型与时段</li>
+          <li>输入、输出分开计价，缓存命中单独记账，价格版本不可回改</li>
+          <li>三账户并行：现金余额 / 政府补贴额度 / 赠送额度</li>
+          <li>日账单、月账单；平台计量、上游账单、企业确认三方对账</li>
+          <li>对公转账、电子发票；补贴部分可单独出账、单独核销</li>
+          <li>请求级留痕（调用方、模型、摘要、费用、是否命中补贴），日志留存 3 年</li>
+          <li>异常烧钱告警、敏感词过滤，满足区级审计抽查</li>
+        </ul>
+        <div class="depend">适合：区级监管驾驶舱、国企成本分摊、专票与部门预算。不开通时，企业仍可查看基础用量，但不具备政务口径对账与三账户账本。</div>
+      </div>
+      <div class="option featured">
+        <div class="o-kicker">OPTION B · 可选</div>
+        <h3>补贴发放通道</h3>
+        <p class="o-desc">把区里的算力或模型使用支持，从线下拨付改成「申报—审核—额度到账—调用抵扣—复盘」的在线通道。</p>
+        <ul>
+          <li>按企业类型配置额度：高新 / 专精特新 / 规上 / 初创等</li>
+          <li>按模型倾斜：国产模型补贴比例更高，引导信创方向使用</li>
+          <li>企业在线提交资质 → 主管部门在线审核 → 额度自动入账</li>
+          <li>调用时自动抵扣补贴，现金与补贴分账，余额 / 已用 / 剩余透明</li>
+          <li>可限定场景与模型白名单，避免补贴被用于无关调用</li>
+          <li>政府大屏：发了多少、发给谁、用在什么场景、有无异常</li>
+        </ul>
+        <div class="depend">依赖选项 A：没有可信的政务级计量，就不能做自动抵扣与审计复盘。不发区级补贴的项目可只开网关，或只开网关 + 计量。</div>
+      </div>
+    </div>
+    <div class="combos">
+      <div class="combo">
+        <h4>组合 1 · 企业调度版</h4>
+        <p>只开通统一调度网关。区内企业一个账号调用模型、看基础账单，政府侧不做补贴兑付。</p>
+        <div class="bits">底座　　适合先验证接入与降本</div>
+      </div>
+      <div class="combo">
+        <h4>组合 2 · 治理结算版</h4>
+        <p>网关 + 政务级计量结算。满足国企分摊、对公开票、用量审计，但暂不运行补贴政策。</p>
+        <div class="bits">底座 + 选项 A</div>
+      </div>
+      <div class="combo">
+        <h4>组合 3 · 政策兑付版</h4>
+        <p>在计量账本之上开通补贴发放通道，形成「政策—申报—抵扣—监管」闭环。</p>
+        <div class="bits">底座 + 选项 A + 选项 B</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 智能路由示意 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-no">04</span>
+      <h2 class="sec-title">智能路由如何帮企业省钱</h2>
+      <span class="sec-desc">核心差异化能力示意</span>
+    </div>
+    <div class="route-box">
+      <div class="flow">
+        <div class="flow-node">用户提交任务<span class="sub">自然语言 / API 调用</span></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">小模型拆解<span class="sub">复杂度评估 · 子任务拆分</span></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node cheap">简单子任务<br><small>路由到便宜模型</small><span class="sub">DeepSeek-V3 / 通义 Turbo</span></div>
+      </div>
+      <div class="flow" style="margin-top:10px">
+        <div class="flow-node" style="visibility:hidden">占位</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node" style="visibility:hidden">占位</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node exp">复杂推理子任务<br><small>路由到强模型</small><span class="sub">o1 / Claude 3.7</span></div>
+      </div>
+      <div class="flow" style="margin-top:10px">
+        <div class="flow-node" style="visibility:hidden">占位</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node" style="visibility:hidden">占位</div>
+        <div class="flow-arrow">←</div>
+        <div class="flow-node">结果聚合返回<span class="sub">对比全走强模型 · 节省成本</span></div>
+      </div>
+      <div id="costChart"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 补贴闭环 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-no">05</span>
+      <h2 class="sec-title">补贴监管闭环 <span class="opt-badge">选项 B 开通后启用</span></h2>
+      <span class="sec-desc">政府钱花到哪，一笔一笔可追溯</span>
+    </div>
+    <div class="loop">
+      <div class="loop-step"><div class="n">1</div><h5>政策制定</h5><p>政府配置补贴规则：企业类型、模型倾斜比例、场景范围。</p></div>
+      <div class="loop-step"><div class="n">2</div><h5>企业申报</h5><p>在线提交营业执照、高新证书等资质材料。</p></div>
+      <div class="loop-step"><div class="n">3</div><h5>在线审核</h5><p>政府审核通过后，补贴额度自动划入企业账户。</p></div>
+      <div class="loop-step"><div class="n">4</div><h5>使用抵扣</h5><p>企业调用模型时自动抵扣，现金与补贴分账出账。</p></div>
+      <div class="loop-step"><div class="n">5</div><h5>监管复盘</h5><p>大屏呈现全区补贴流向，异常告警，审计留痕 3 年。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 立项必补能力 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-no">06</span>
+      <h2 class="sec-title">政府立项必补能力</h2>
+      <span class="sec-desc">评审时一定会被追问的硬指标</span>
+    </div>
+    <div class="must">
+      <div class="must-item"><div class="dot"></div><div><h5>数据安全与合规</h5><p>数据默认不留存、可配置存储；部署青浦政务云，数据不出上海；等保 2.0 三级。</p></div></div>
+      <div class="must-item"><div class="dot"></div><div><h5>国密与加密</h5><p>支持 SM2 / SM4 国密算法，与上游模型间全链路加密。</p></div></div>
+      <div class="must-item"><div class="dot"></div><div><h5>信创适配</h5><p>兼容昇腾 / 海光 / 寒武纪芯片，麒麟 / 统信 OS，争取上海市信创试点。</p></div></div>
+      <div class="must-item"><div class="dot"></div><div><h5>政务驾驶舱</h5><p>全区用量大盘、企业活跃度、模型 TOP 榜、补贴进度、异常告警可视化大屏。</p></div></div>
+      <div class="must-item"><div class="dot"></div><div><h5>政务系统对接</h5><p>预留一网通办、法人库、信用平台、企业服务平台对接接口。</p></div></div>
+      <div class="must-item"><div class="dot"></div><div><h5>SLA 与财务闭环</h5><p>可用性 ≥99.9%；支持对公转账、电子发票自动开具、补贴部分单独出账。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="todo">
+      <h3>选项开通前需确认</h3>
+      <ol>
+        <li><b>首期开哪一档？</b>建议种子阶段先上企业调度版，有明确区级补贴文件后再开政策兑付版，避免账本与政策规则一并试错。</li>
+        <li><b>计量结算的出资与出账主体？</b>企业现金消费与财政补贴必须分账，发票税目与补贴资金渠道要在合同和财政口径里先写死。</li>
+        <li><b>补贴审核权限落在哪？</b>区科委、经信或大数据中心的审核流、额度变更与追回规则，需要书面授权后再接系统。</li>
+        <li><b>境外模型是否进入可补贴范围？</b>建议补贴白名单默认仅国产授权模型；境外通道即使底座可接，也不进入补贴抵扣。</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer>
+  青浦区企业级算力 Token 聚合调度与补贴监管平台 · 需求梳理 v0.2
+</footer>
+
+<script>
+  // 成本对比柱状图（示意数据）
+  var chart = echarts.init(document.getElementById('costChart'));
+  chart.setOption({
+    title:{text:'单任务 token 成本对比（示意）',left:'center',textStyle:{fontSize:14,color:'#0B2545',fontWeight:600}},
+    tooltip:{trigger:'axis'},
+    legend:{bottom:0,textStyle:{fontSize:12}},
+    grid:{left:50,right:30,top:50,bottom:50},
+    xAxis:{type:'category',data:'客服问答 文档摘要 代码生成 法律推理 科研分析'.split(' '),
+      axisLabel:{fontSize:12,color:'#475569'}},
+    yAxis:{type:'value',name:'相对成本（元）',axisLabel:{color:'#475569'}},
+    series:[
+      {name:'全部走贵模型（GPT-4o / o1）',type:'bar',data:[1.20,2.80,4.50,8.20,12.60],
+        itemStyle:{color:'#D97706',borderRadius:[4,4,0,0]}},
+      {name:'智能路由调度后',type:'bar',data:[0.18,0.72,1.50,3.10,5.80],
+        itemStyle:{color:'#047857',borderRadius:[4,4,0,0]}}
+    ]
+  });
+  window.addEventListener('resize',function(){chart.resize();});
+</script>
+</body>
+</html>
