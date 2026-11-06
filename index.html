@@ -1,497 +1,499 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>青浦区企业级算力Token聚合调度与补贴监管平台 · 需求梳理 v0.2</title>
-<script src="https://fastly.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<style>
-  :root{
-    --navy-900:#0B2545;
-    --navy-700:#13315C;
-    --blue-600:#1E40AF;
-    --blue-500:#2563EB;
-    --blue-100:#DBEAFE;
-    --gold:#C9A961;
-    --gold-soft:#E8D9B5;
-    --bg:#F5F7FA;
-    --line:#E2E8F0;
-    --ink:#0F172A;
-    --ink-2:#475569;
-    --ink-3:#94A3B8;
-    --white:#FFFFFF;
-    --ok:#047857;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--bg);color:var(--ink);
-    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;
-    font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
-
-  /* ===== HERO ===== */
-  .hero{background:linear-gradient(135deg,var(--navy-900) 0%,var(--navy-700) 60%,#1B4B8F 100%);
-    color:#fff;padding:64px 0 56px;position:relative;overflow:hidden}
-  .hero::after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;
-    border:1px solid rgba(255,255,255,.08);border-radius:50%}
-  .hero::before{content:"";position:absolute;right:-60px;top:-60px;width:300px;height:300px;
-    border:1px solid rgba(201,169,97,.25);border-radius:50%}
-  .hero .tag{display:inline-block;font-size:12px;letter-spacing:2px;color:var(--gold);
-    border:1px solid var(--gold);padding:4px 12px;border-radius:2px;margin-bottom:22px}
-  .hero h1{font-size:34px;line-height:1.3;font-weight:700;letter-spacing:1px;max-width:880px}
-  .hero h1 em{color:var(--gold);font-style:normal}
-  .hero .sub{margin-top:18px;font-size:15px;color:rgba(255,255,255,.78);max-width:780px}
-  .hero .meta{margin-top:28px;font-size:13px;color:rgba(255,255,255,.55)}
-
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.12);
-    border:1px solid rgba(255,255,255,.12);margin-top:40px;border-radius:4px;overflow:hidden}
-  .stat{background:var(--navy-900);padding:20px 22px}
-  .stat .num{font-size:28px;font-weight:700;color:var(--gold);font-family:"DIN Alternate",Impact,sans-serif}
-  .stat .lbl{font-size:12px;color:rgba(255,255,255,.7);margin-top:4px;letter-spacing:1px}
-
-  /* ===== SECTION通用 ===== */
-  section{padding:56px 0 8px}
-  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:28px;
-    padding-bottom:14px;border-bottom:2px solid var(--navy-900)}
-  .sec-no{font-family:"DIN Alternate",Impact,sans-serif;font-size:14px;color:var(--gold);
-    letter-spacing:2px;font-weight:700}
-  .sec-title{font-size:24px;font-weight:700;color:var(--navy-900)}
-  .sec-desc{font-size:13px;color:var(--ink-3);margin-left:auto}
-
-  /* ===== 定位 ===== */
-  .positioning{background:var(--white);border-left:4px solid var(--gold);padding:24px 28px;
-    border-radius:0 6px 6px 0;box-shadow:0 1px 3px rgba(15,23,42,.05)}
-  .positioning p{font-size:16px;color:var(--ink);line-height:1.9}
-  .positioning .key{color:var(--blue-600);font-weight:600}
-
-  /* ===== 角色 ===== */
-  .roles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  .role{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:22px;
-    border-top:3px solid var(--blue-600)}
-  .role.gov{border-top-color:var(--gold)}
-  .role.op{border-top-color:var(--navy-700)}
-  .role .r-tag{font-size:11px;letter-spacing:1px;color:var(--ink-3);margin-bottom:8px}
-  .role h4{font-size:16px;color:var(--navy-900);margin-bottom:10px}
-  .role p{font-size:13px;color:var(--ink-2);line-height:1.7}
-
-  /* ===== 四大模块 ===== */
-  .modules{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-  .mod{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:26px;
-    transition:transform .2s,box-shadow .2s}
-  .mod:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(11,37,69,.08)}
-  .mod-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
-  .mod-ico{width:44px;height:44px;background:var(--navy-900);color:var(--gold);
-    display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0}
-  .mod-ico svg{width:22px;height:22px}
-  .mod-head h3{font-size:18px;color:var(--navy-900)}
-  .mod-head .m-no{font-size:11px;color:var(--ink-3);letter-spacing:1px}
-  .mod ul{list-style:none;margin-top:8px}
-  .mod li{font-size:13.5px;color:var(--ink-2);padding:6px 0 6px 18px;position:relative;line-height:1.7}
-  .mod li::before{content:"";position:absolute;left:0;top:14px;width:8px;height:2px;background:var(--gold)}
-  .mod li b{color:var(--ink);font-weight:600}
-
-  /* ===== 智能路由流程 ===== */
-  .route-box{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:32px}
-  .flow{display:grid;grid-template-columns:1fr auto 1.2fr auto 1fr auto 1fr;align-items:center;gap:10px}
-  .flow-node{background:var(--blue-100);border:1px solid var(--blue-500);border-radius:6px;
-    padding:14px 10px;text-align:center;font-size:13px;color:var(--navy-900);font-weight:500}
-  .flow-node.cheap{background:#ECFDF5;border-color:#10B981;color:#065F46}
-  .flow-node.exp{background:#FEF3C7;border-color:#D97706;color:#92400E}
-  .flow-node .sub{display:block;font-size:11px;color:var(--ink-3);font-weight:400;margin-top:4px}
-  .flow-arrow{color:var(--ink-3);font-size:20px;font-weight:300}
-  #costChart{width:100%;height:320px;margin-top:24px}
-
-  /* ===== 补贴闭环 ===== */
-  .loop{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:8px;
-    background:var(--white);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-  .loop-step{padding:22px 18px;border-right:1px dashed var(--line);position:relative}
-  .loop-step:last-child{border-right:none}
-  .loop-step .n{width:28px;height:28px;border-radius:50%;background:var(--navy-900);color:var(--gold);
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:10px}
-  .loop-step h5{font-size:14px;color:var(--navy-900);margin-bottom:6px}
-  .loop-step p{font-size:12px;color:var(--ink-2);line-height:1.6}
-
-  /* ===== 必补能力 ===== */
-  .must{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-  .must-item{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:18px 20px;
-    display:flex;gap:12px;align-items:flex-start}
-  .must-item .dot{width:8px;height:8px;background:var(--gold);border-radius:50%;margin-top:7px;flex-shrink:0}
-  .must-item h5{font-size:14px;color:var(--navy-900);margin-bottom:4px}
-  .must-item p{font-size:12.5px;color:var(--ink-2);line-height:1.6}
-
-  .opt-badge{display:inline-block;font-size:11px;letter-spacing:1px;color:var(--navy-900);
-    background:var(--gold-soft);border:1px solid var(--gold);padding:1px 8px;border-radius:2px;
-    margin-left:8px;vertical-align:middle;font-weight:600}
-  .opt-badge.base{background:var(--blue-100);border-color:var(--blue-500);color:var(--blue-600)}
-  .options{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  .option{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:24px 22px;position:relative}
-  .option.featured{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
-  .option .o-kicker{font-size:11px;letter-spacing:1.5px;color:var(--ink-3);margin-bottom:8px}
-  .option h3{font-size:18px;color:var(--navy-900);margin-bottom:10px}
-  .option .o-desc{font-size:13.5px;color:var(--ink-2);margin-bottom:14px;line-height:1.7}
-  .option ul{list-style:none}
-  .option li{font-size:13.5px;color:var(--ink-2);padding:5px 0 5px 16px;position:relative}
-  .option li::before{content:"";position:absolute;left:0;top:13px;width:8px;height:2px;background:var(--gold)}
-  .option .depend{margin-top:14px;font-size:12px;color:var(--ink-3);background:#F8FAFC;border-radius:4px;padding:8px 10px}
-  .combos{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
-  .combo{background:var(--navy-900);color:#fff;border-radius:8px;padding:18px 20px}
-  .combo h4{color:var(--gold);font-size:15px;margin-bottom:8px}
-  .combo p{font-size:13px;color:rgba(255,255,255,.82);line-height:1.7}
-  .combo .bits{font-size:12px;color:rgba(255,255,255,.55);margin-top:8px;letter-spacing:.5px}
-
-  /* ===== 待确认 ===== */
-  .todo{background:var(--navy-900);color:#fff;border-radius:8px;padding:32px}
-  .todo h3{font-size:20px;color:var(--gold);margin-bottom:20px}
-  .todo ol{list-style:none;counter-reset:q}
-  .todo li{counter-increment:q;padding:12px 0 12px 48px;position:relative;border-bottom:1px solid rgba(255,255,255,.08);
-    font-size:14px;color:rgba(255,255,255,.88);line-height:1.7}
-  .todo li:last-child{border-bottom:none}
-  .todo li::before{content:"Q"counter(q);position:absolute;left:0;top:12px;width:32px;height:24px;
-    background:var(--gold);color:var(--navy-900);font-size:12px;font-weight:700;
-    display:flex;align-items:center;justify-content:center;border-radius:3px;font-family:monospace}
-  .todo li b{color:#fff}
-
-  footer{padding:36px 0 48px;text-align:center;color:var(--ink-3);font-size:12px;letter-spacing:1px}
-
-  /* ===== 响应式 ===== */
-  @media (max-width:900px){
-    .stats,.roles,.must{grid-template-columns:repeat(2,1fr)}
-    .modules,.options,.combos{grid-template-columns:1fr}
-    .loop{grid-template-columns:1fr 1fr}
-    .loop-step{border-right:none;border-bottom:1px dashed var(--line)}
-    .flow{grid-template-columns:1fr;gap:8px}
-    .flow-arrow{transform:rotate(90deg);text-align:center}
-    .hero h1{font-size:26px}
-    .options,.combos{grid-template-columns:1fr}
-    .sec-desc{display:none}
-  }
-  @media (max-width:560px){
-    .stats,.roles,.must,.loop{grid-template-columns:1fr}
-    .hero{padding:44px 0 40px}
-    .hero h1{font-size:22px}
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>企业级大模型调度与用量治理平台 · 方案 v1.2</title>
+  <style>
+    :root {
+      --ink: #1c2430;
+      --muted: #5b6573;
+      --line: #d8dee6;
+      --paper: #f7f5f0;
+      --card: #ffffff;
+      --navy: #1e3a5f;
+      --navy-2: #16314f;
+      --gold: #b45309;
+      --gold-soft: #f3e6d4;
+      --ok: #0f6b4c;
+      --warn: #9a3412;
+      --chip: #eef2f6;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+    a { color: var(--navy); }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; }
+    .cover {
+      background: linear-gradient(145deg, var(--navy-2), var(--navy) 55%, #2c5282);
+      color: #f8f4ec;
+      border-radius: 18px;
+      padding: 48px 44px 40px;
+      margin-bottom: 28px;
+    }
+    .cover .meta { opacity: .82; font-size: 13px; letter-spacing: .04em; }
+    .cover h1 { font-size: 34px; line-height: 1.25; margin: 16px 0 12px; font-weight: 700; }
+    .cover .lead { font-size: 17px; max-width: 760px; opacity: .94; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+    .tag {
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 13px;
+    }
+    nav {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px 22px;
+      margin-bottom: 28px;
+    }
+    nav strong { display: block; margin-bottom: 8px; }
+    nav ol { margin: 0; padding-left: 22px; columns: 2; gap: 24px; }
+    nav a { text-decoration: none; }
+    @media (max-width: 720px) { nav ol { columns: 1; } .cover { padding: 32px 22px; } .cover h1 { font-size: 26px; } }
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 28px 30px 32px;
+      margin-bottom: 20px;
+    }
+    h2 { margin: 0 0 6px; font-size: 22px; color: var(--navy); }
+    .sec-id { color: var(--gold); font-size: 13px; font-weight: 700; letter-spacing: .08em; }
+    h3 { font-size: 17px; margin: 22px 0 8px; }
+    p { margin: 10px 0; color: var(--ink); }
+    .muted { color: var(--muted); }
+    .callout {
+      background: var(--gold-soft);
+      border-left: 4px solid var(--gold);
+      padding: 14px 16px;
+      border-radius: 0 10px 10px 0;
+      margin: 16px 0;
+    }
+    .callout.warn { background: #fde8e4; border-left-color: var(--warn); }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 14px 0; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+    @media (max-width: 800px) { .grid, .grid3 { grid-template-columns: 1fr; } }
+    .card {
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .card h4 { margin: 0 0 6px; font-size: 15px; }
+    .card p { margin: 0; font-size: 14px; color: var(--muted); }
+    .card.featured { border-color: #e8c99a; box-shadow: inset 0 0 0 1px #f3e6d4; }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: .06em;
+      color: var(--navy);
+      background: var(--gold-soft);
+      border: 1px solid #e8c99a;
+      border-radius: 999px;
+      padding: 1px 8px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .depend { margin-top: 10px; font-size: 13px; color: var(--muted); background: #f8fafc; border-radius: 8px; padding: 8px 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0 6px; }
+    th, td { border-bottom: 1px solid var(--line); text-align: left; padding: 9px 8px; vertical-align: top; }
+    th { color: var(--navy); font-weight: 650; background: #f3f6fa; }
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0 16px; }
+    .step {
+      background: var(--chip);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    .step b { display: block; color: var(--navy); }
+    .arrow { color: var(--gold); font-weight: 700; }
+    ul { margin: 8px 0 8px 20px; }
+    li { margin: 5px 0; }
+    footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 28px; }
+    @media print {
+      body { background: #fff; }
+      .wrap { max-width: none; padding: 0; }
+      section, .cover, nav { break-inside: avoid; box-shadow: none; }
+      nav { display: none; }
+    }
+  </style>
 </head>
 <body>
-
-<!-- ============ HERO ============ -->
-<header class="hero">
   <div class="wrap">
-    <span class="tag">青浦区政府立项 · 需求梳理 v0.1</span>
-    <h1>企业级算力 <em>Token 聚合调度</em><br>与补贴监管一体化平台</h1>
-    <p class="sub">面向青浦区注册企业，底座提供一个账号接入主流大模型 API 与智能路由降本。政务级计量结算、补贴发放通道作为可选项按需开通，既可只做企业调度中台，也可升级为区级补贴监管平台。</p>
-    <div class="meta">文档版本 v0.2 ｜ 2026-11-06</div>
+    <header class="cover">
+      <div class="meta">上海领意 · 内部方案稿 · v1.2 · 2026-11-06</div>
+      <h1>企业级大模型调度与用量治理平台</h1>
+      <p class="lead">同一个项目、同一套平台。底座是统一调度网关、企业计量结算和可解释的模型选型；政务级计量结算、补贴发放通道作为可选项按需开通。既可以只服务入驻企业，也可以在有政策文件时升级为区级补贴监管能力，而不另立第二套产品。</p>
+      <div class="tags">
+        <span class="tag">一个项目</span>
+        <span class="tag">统一调度网关</span>
+        <span class="tag">企业计量结算</span>
+        <span class="tag">智能选型</span>
+        <span class="tag">可选项：政务级计量</span>
+        <span class="tag">可选项：补贴发放通道</span>
+        <span class="tag">国企 / 政务友好</span>
+        <span class="tag">落地实施（独立核算）</span>
+      </div>
+    </header>
 
-    <div class="stats">
-      <div class="stat"><div class="num">1+2</div><div class="lbl">底座 + 可选政务模块</div></div>
-      <div class="stat"><div class="num">10+</div><div class="lbl">首期接入模型</div></div>
-      <div class="stat"><div class="num">5 维</div><div class="lbl">用量审计粒度</div></div>
-      <div class="stat"><div class="num">3 年</div><div class="lbl">日志留存周期</div></div>
-    </div>
-  </div>
-</header>
-
-<!-- ============ 01 项目定位 ============ -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="sec-no">01</span>
-      <h2 class="sec-title">项目定位</h2>
-      <span class="sec-desc">一句话讲清楚平台是什么</span>
-    </div>
-    <div class="positioning">
-      <p>
-        本质是 <span class="key">LLM API 聚合网关</span>。
-        <span class="key">政务级计量结算</span>与<span class="key">补贴发放通道</span>不捆绑进每一户企业，而是作为可独立开通的政务能力选项。
-        底座让区内企业<b>一个账号、一个 API Key</b> 调用主流大模型，并通过<b>智能路由</b>把任务分给性价比更合适的模型；
-        若区里需要政策兑付与监管，再叠加计量结算与补贴通道，实现<b>补贴精准投放、用量全程可审计</b>。
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 02 角色分工 ============ -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="sec-no">02</span>
-      <h2 class="sec-title">四方角色与权责</h2>
-      <span class="sec-desc">谁在用、谁付钱、谁监管</span>
-    </div>
-    <div class="roles">
-      <div class="role gov">
-        <div class="r-tag">监管方 / 出资方</div>
-        <h4>青浦区科委 · 经信委 · 大数据中心</h4>
-        <p>查看全区用量大盘、发放补贴额度、配置模型白名单、审计异常调用、向上汇报政绩。</p>
-      </div>
-      <div class="role">
-        <div class="r-tag">付费方 / 使用方</div>
-        <h4>青浦注册法人企业</h4>
-        <p>登录后用统一 API Key 调模型，查看账单与用量明细，在线申请补贴、抵扣支出。</p>
-      </div>
-      <div class="role op">
-        <div class="r-tag">运营方 / 中间层</div>
-        <h4>平台运营主体</h4>
-        <p>统一对接上游模型、执行智能路由、出具账单结算、提供 7×24 客服与 SLA 保障。</p>
-      </div>
-      <div class="role">
-        <div class="r-tag">被聚合方</div>
-        <h4>上游模型供应商</h4>
-        <p>DeepSeek、通义千问、豆包、智谱、GPT、Claude、Gemini，以及青浦本地智算节点私有化模型。</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 03 四大核心模块 ============ -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="sec-no">03</span>
-      <h2 class="sec-title">四大核心功能模块</h2>
-      <span class="sec-desc">需求主体框架</span>
-    </div>
-    <div class="modules">
-
-      <div class="mod">
-        <div class="mod-head">
-          <div class="mod-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-          <div><div class="m-no">MODULE 01 · 底座</div><h3>统一 Token 接入与单点登录</h3></div>
-        </div>
-        <ul>
-          <li><b>一个平台账号</b> → 自动获得统一 API Key / SDK / Web 控制台</li>
-          <li>聚合国产合规模型：DeepSeek V3/R1、通义千问、豆包、智谱 GLM、文心、Kimi、MiniMax</li>
-          <li>海外模型走合规通道：GPT-4o/o1、Claude 3.5/3.7、Gemini 2.0</li>
-          <li>对接青浦本地智算节点与私有化开源模型实例</li>
-          <li>OpenAI 兼容协议，企业原代码改一行 base_url 即可切换</li>
-          <li>企业子账号体系（多部门 / 多员工）+ 一网通办法人 SSO</li>
-        </ul>
-      </div>
-
-      <div class="mod">
-        <div class="mod-head">
-          <div class="mod-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 9v6a3 3 0 003 3h6"/></svg></div>
-          <div><div class="m-no">MODULE 02 · 底座</div><h3>智能路由与任务拆分</h3></div>
-        </div>
-        <ul>
-          <li><b>静态路由</b>：企业自行指定场景默认模型</li>
-          <li><b>动态路由（核心卖点）</b>：小模型做任务理解与复杂度评估 → 自动拆子任务 → 简单任务走便宜模型、复杂推理走强模型 → 结果聚合返回</li>
-          <li>每笔请求的<b>路由决策、token 消耗、节省金额</b>对用户全程可见</li>
-          <li>超时 / 限流 / 模型故障自动降级，业务不中断</li>
-        </ul>
-      </div>
-
-      <div class="mod">
-        <div class="mod-head">
-          <div class="mod-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
-          <div><div class="m-no">MODULE 03 · 可选项</div><h3>政务级计量结算 <span class="opt-badge">OPTION</span></h3></div>
-        </div>
-        <ul>
-          <li><b>五维计量</b>：企业 / 部门 / 员工 / API Key / 模型 / 时段</li>
-          <li>token 级精确计费（prompt + completion 分开），自动出日 / 月账单</li>
-          <li>每一笔请求全留痕：调用方、时间、模型、输入输出摘要、费用、是否命中补贴</li>
-          <li>敏感词过滤 + 异常调用告警（如小时级异常烧钱）</li>
-          <li>三账户余额并行：现金余额 / 政府补贴额度 / 赠送额度</li>
-        </ul>
-      </div>
-
-      <div class="mod">
-        <div class="mod-head">
-          <div class="mod-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
-          <div><div class="m-no">MODULE 04 · 可选项</div><h3>补贴发放通道 <span class="opt-badge">OPTION</span></h3></div>
-        </div>
-        <ul>
-          <li>政府后台按企业类型（高新 / 专精特新 / 规上 / 初创）配置差异化补贴额度</li>
-          <li>按模型倾斜：用国产模型补贴比例高，引导信创</li>
-          <li>企业在线提交资质 → 政府在线审核 → 自动发放补贴额度</li>
-          <li>每笔消耗自动抵扣补贴，余额、已用、剩余全透明</li>
-          <li>政府大屏：补贴发了多少、发给谁、用在什么场景、满意度如何</li>
-        </ul>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ============ 03b 建设选项 ============ -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="sec-no">03B</span>
-      <h2 class="sec-title">建设与开通选项</h2>
-      <span class="sec-desc">底座必选，政务能力按需叠加</span>
-    </div>
-    <div class="options">
-      <div class="option">
-        <div class="o-kicker">BASE · 必选</div>
-        <h3>统一调度网关</h3>
-        <p class="o-desc">所有租户默认开通。一个入口聚合授权模型，完成登录、路由、限流与基础用量展示。</p>
-        <ul>
-          <li>统一 API Key / SDK / 控制台，OpenAI 兼容协议</li>
-          <li>国产合规模型 + 经评估后再开的合规出境通道</li>
-          <li>可对接青浦本地智算节点与私有化实例</li>
-          <li>智能路由：简单任务走便宜模型，复杂推理走强模型</li>
-          <li>企业子账号与一网通办法人 SSO</li>
-        </ul>
-      </div>
-      <div class="option featured">
-        <div class="o-kicker">OPTION A · 可选</div>
-        <h3>政务级计量结算</h3>
-        <p class="o-desc">面向需要审计、分摊和对公出账的国企、集团及区级监管场景。把每一次调用变成可复核的财政与企业账单。</p>
-        <ul>
-          <li>五维计量：企业 / 部门 / 员工 / API Key / 模型与时段</li>
-          <li>输入、输出分开计价，缓存命中单独记账，价格版本不可回改</li>
-          <li>三账户并行：现金余额 / 政府补贴额度 / 赠送额度</li>
-          <li>日账单、月账单；平台计量、上游账单、企业确认三方对账</li>
-          <li>对公转账、电子发票；补贴部分可单独出账、单独核销</li>
-          <li>请求级留痕（调用方、模型、摘要、费用、是否命中补贴），日志留存 3 年</li>
-          <li>异常烧钱告警、敏感词过滤，满足区级审计抽查</li>
-        </ul>
-        <div class="depend">适合：区级监管驾驶舱、国企成本分摊、专票与部门预算。不开通时，企业仍可查看基础用量，但不具备政务口径对账与三账户账本。</div>
-      </div>
-      <div class="option featured">
-        <div class="o-kicker">OPTION B · 可选</div>
-        <h3>补贴发放通道</h3>
-        <p class="o-desc">把区里的算力或模型使用支持，从线下拨付改成「申报—审核—额度到账—调用抵扣—复盘」的在线通道。</p>
-        <ul>
-          <li>按企业类型配置额度：高新 / 专精特新 / 规上 / 初创等</li>
-          <li>按模型倾斜：国产模型补贴比例更高，引导信创方向使用</li>
-          <li>企业在线提交资质 → 主管部门在线审核 → 额度自动入账</li>
-          <li>调用时自动抵扣补贴，现金与补贴分账，余额 / 已用 / 剩余透明</li>
-          <li>可限定场景与模型白名单，避免补贴被用于无关调用</li>
-          <li>政府大屏：发了多少、发给谁、用在什么场景、有无异常</li>
-        </ul>
-        <div class="depend">依赖选项 A：没有可信的政务级计量，就不能做自动抵扣与审计复盘。不发区级补贴的项目可只开网关，或只开网关 + 计量。</div>
-      </div>
-    </div>
-    <div class="combos">
-      <div class="combo">
-        <h4>组合 1 · 企业调度版</h4>
-        <p>只开通统一调度网关。区内企业一个账号调用模型、看基础账单，政府侧不做补贴兑付。</p>
-        <div class="bits">底座　　适合先验证接入与降本</div>
-      </div>
-      <div class="combo">
-        <h4>组合 2 · 治理结算版</h4>
-        <p>网关 + 政务级计量结算。满足国企分摊、对公开票、用量审计，但暂不运行补贴政策。</p>
-        <div class="bits">底座 + 选项 A</div>
-      </div>
-      <div class="combo">
-        <h4>组合 3 · 政策兑付版</h4>
-        <p>在计量账本之上开通补贴发放通道，形成「政策—申报—抵扣—监管」闭环。</p>
-        <div class="bits">底座 + 选项 A + 选项 B</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 04 智能路由示意 ============ -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="sec-no">04</span>
-      <h2 class="sec-title">智能路由如何帮企业省钱</h2>
-      <span class="sec-desc">核心差异化能力示意</span>
-    </div>
-    <div class="route-box">
-      <div class="flow">
-        <div class="flow-node">用户提交任务<span class="sub">自然语言 / API 调用</span></div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-node">小模型拆解<span class="sub">复杂度评估 · 子任务拆分</span></div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-node cheap">简单子任务<br><small>路由到便宜模型</small><span class="sub">DeepSeek-V3 / 通义 Turbo</span></div>
-      </div>
-      <div class="flow" style="margin-top:10px">
-        <div class="flow-node" style="visibility:hidden">占位</div>
-        <div class="flow-arrow"></div>
-        <div class="flow-node" style="visibility:hidden">占位</div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-node exp">复杂推理子任务<br><small>路由到强模型</small><span class="sub">o1 / Claude 3.7</span></div>
-      </div>
-      <div class="flow" style="margin-top:10px">
-        <div class="flow-node" style="visibility:hidden">占位</div>
-        <div class="flow-arrow"></div>
-        <div class="flow-node" style="visibility:hidden">占位</div>
-        <div class="flow-arrow">←</div>
-        <div class="flow-node">结果聚合返回<span class="sub">对比全走强模型 · 节省成本</span></div>
-      </div>
-      <div id="costChart"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 05 补贴闭环 ============ -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="sec-no">05</span>
-      <h2 class="sec-title">补贴监管闭环 <span class="opt-badge">选项 B 开通后启用</span></h2>
-      <span class="sec-desc">政府钱花到哪，一笔一笔可追溯</span>
-    </div>
-    <div class="loop">
-      <div class="loop-step"><div class="n">1</div><h5>政策制定</h5><p>政府配置补贴规则：企业类型、模型倾斜比例、场景范围。</p></div>
-      <div class="loop-step"><div class="n">2</div><h5>企业申报</h5><p>在线提交营业执照、高新证书等资质材料。</p></div>
-      <div class="loop-step"><div class="n">3</div><h5>在线审核</h5><p>政府审核通过后，补贴额度自动划入企业账户。</p></div>
-      <div class="loop-step"><div class="n">4</div><h5>使用抵扣</h5><p>企业调用模型时自动抵扣，现金与补贴分账出账。</p></div>
-      <div class="loop-step"><div class="n">5</div><h5>监管复盘</h5><p>大屏呈现全区补贴流向，异常告警，审计留痕 3 年。</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 06 立项必补能力 ============ -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="sec-no">06</span>
-      <h2 class="sec-title">政府立项必补能力</h2>
-      <span class="sec-desc">评审时一定会被追问的硬指标</span>
-    </div>
-    <div class="must">
-      <div class="must-item"><div class="dot"></div><div><h5>数据安全与合规</h5><p>数据默认不留存、可配置存储；部署青浦政务云，数据不出上海；等保 2.0 三级。</p></div></div>
-      <div class="must-item"><div class="dot"></div><div><h5>国密与加密</h5><p>支持 SM2 / SM4 国密算法，与上游模型间全链路加密。</p></div></div>
-      <div class="must-item"><div class="dot"></div><div><h5>信创适配</h5><p>兼容昇腾 / 海光 / 寒武纪芯片，麒麟 / 统信 OS，争取上海市信创试点。</p></div></div>
-      <div class="must-item"><div class="dot"></div><div><h5>政务驾驶舱</h5><p>全区用量大盘、企业活跃度、模型 TOP 榜、补贴进度、异常告警可视化大屏。</p></div></div>
-      <div class="must-item"><div class="dot"></div><div><h5>政务系统对接</h5><p>预留一网通办、法人库、信用平台、企业服务平台对接接口。</p></div></div>
-      <div class="must-item"><div class="dot"></div><div><h5>SLA 与财务闭环</h5><p>可用性 ≥99.9%；支持对公转账、电子发票自动开具、补贴部分单独出账。</p></div></div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="todo">
-      <h3>选项开通前需确认</h3>
+    <nav>
+      <strong>目录</strong>
       <ol>
-        <li><b>首期开哪一档？</b>建议种子阶段先上企业调度版，有明确区级补贴文件后再开政策兑付版，避免账本与政策规则一并试错。</li>
-        <li><b>计量结算的出资与出账主体？</b>企业现金消费与财政补贴必须分账，发票税目与补贴资金渠道要在合同和财政口径里先写死。</li>
-        <li><b>补贴审核权限落在哪？</b>区科委、经信或大数据中心的审核流、额度变更与追回规则，需要书面授权后再接系统。</li>
-        <li><b>境外模型是否进入可补贴范围？</b>建议补贴白名单默认仅国产授权模型；境外通道即使底座可接，也不进入补贴抵扣。</li>
+        <li><a href="#s0">修订要点</a></li>
+        <li><a href="#s1">定位与判断</a></li>
+        <li><a href="#s2">国企与政府支持优势</a></li>
+        <li><a href="#s3">建设与开通选项</a></li>
+        <li><a href="#s4">收入结构</a></li>
+        <li><a href="#s5">功能架构</a></li>
+        <li><a href="#s6">核心流程</a></li>
+        <li><a href="#s7">选型引擎</a></li>
+        <li><a href="#s8">计量与结算</a></li>
+        <li><a href="#s9">技术架构</a></li>
+        <li><a href="#s10">实施路线</a></li>
+        <li><a href="#s11">风险与合规</a></li>
+        <li><a href="#s12">待确认决策</a></li>
       </ol>
-    </div>
+    </nav>
+
+    <section id="s0">
+      <div class="sec-id">00 · 相对 v1.1 的调整</div>
+      <h2>修订要点</h2>
+      <p>v1.2 把原先分开的两份材料并成<b>一个项目</b>：领意企业级调度与用量治理中台是底座；青浦区需求梳理中的政务级计量结算、补贴发放通道不再另做一套平台，而是同一套系统里可独立开通的选项。</p>
+      <table>
+        <thead>
+          <tr><th>议题</th><th>v1.1 / 青浦稿</th><th>v1.2 调整</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>项目边界</td><td>领意商业中台与青浦补贴平台分成两份方案</td><td>同一套平台、三种开通组合，不另立产品线</td></tr>
+          <tr><td>对外定位</td><td>v1.1 已改为调度与用量治理，不用「交易」叙事</td><td>维持；政务能力按选项叠加，不捆绑每户企业</td></tr>
+          <tr><td>政务级计量结算</td><td>v1.1 未单列；青浦稿写成平台本质</td><td>作为选项 A：面向国企分摊、对账、开票与区级审计</td></tr>
+          <tr><td>补贴发放通道</td><td>只出现在青浦稿中，且与每户绑定</td><td>作为选项 B：有书面政策后再开通，且依赖选项 A</td></tr>
+          <tr><td>区县场景</td><td>单独以「青浦区政府立项」叙事</td><td>作为政策兑付组合的落地示例，不虚构主管单位或背书</td></tr>
+          <tr><td>主收入 / 种子策略</td><td>服务费 + 年框；一期先验证网关与出账</td><td>维持；种子阶段默认企业调度版，有补贴文件再上政策兑付版</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s1">
+      <div class="sec-id">01 · 定位</div>
+      <h2>定位与判断</h2>
+      <p>平台做三件底座能力：<b>统一调度网关</b>、<b>企业用量计量与结算</b>、<b>可解释的模型选型</b>。另有两件可选项：<b>政务级计量结算</b>、<b>补贴发放通道</b>。应用对接与私有化部署继续按项目制单独报价。</p>
+      <p>上游是各家已授权的模型原厂、推理托管与合规聚合渠道。下游首先是需要发票、预算、审计和责任主体的企业，尤其是国企与集团客户；若地方有算力或模型使用支持政策，再叠加选项，服务主管部门的额度核发与监管复盘。</p>
+      <div class="grid">
+        <div class="card">
+          <h4>判断一：壁垒不在接了多少模型</h4>
+          <p>接模型是两周的活。真正留住客户的是计量准确率、对账差异率，以及预算、权限、审计、发票。这四样做不好，第二个月就会回到云厂商控制台或自己对接原厂。</p>
+        </div>
+        <div class="card">
+          <h4>判断二：国企买的是可追责，不是更便宜</h4>
+          <p>公开报道已提示过灰产中转站风险。国企采购首先排除无授权、无对公、无专票的通道。政府背景支持让「正规通道 + 本地服务商」比纯低价中转更容易过会。</p>
+        </div>
+        <div class="card">
+          <h4>判断三：价差不能当主叙事</h4>
+          <p>官方持续降价、云厂商集采会压缩渠道价差。平台要靠服务费、年框和自助化率活下来。财政补贴资金更不能算作平台流水。</p>
+        </div>
+        <div class="card">
+          <h4>判断四：政务能力按需开，不捆绑</h4>
+          <p>没有可信账本就不能自动发补贴。没有书面政策和审核授权，就不应开通补贴通道。先把网关和出账做稳，再决定是否升级政务选项。</p>
+        </div>
+      </div>
+      <div class="callout">不做全网最低价，也不把「区级补贴平台」写成每家客户的默认形态。价格与授权市场对齐；政务选项只在有明确采购或政策需求时打开。</div>
+    </section>
+
+    <section id="s2">
+      <div class="sec-id">02 · 差异化</div>
+      <h2>统一调度网关：政府支持与国企优势</h2>
+      <p>统一调度网关是所有开通组合共用的第一入口。它被定义为国企可用的合规调度层：一次接入、多家授权模型、集团内多租户隔离，调用可回查、费用可分摊、数据出境属性可管控。</p>
+      <h3>为什么国企需要独立调度层</h3>
+      <ul>
+        <li>集团往往同时有客服、公文、知识库、安防智能化等多条业务线，模型需求不同，但不希望每个子公司单独签十几家厂商、对十几张账单。</li>
+        <li>采购、信息化、保密办和业务部门的诉求不一致：业务要效果，财务要对公专票，合规要境内默认、日志留存、权限到人。</li>
+        <li>直接用单一云厂商控制台会产生绑定顾虑；直接用市面中转，过不了合规审查。中间需要一个中立、可审计、有责任主体的调度入口。</li>
+      </ul>
+      <h3>我方相对纯技术中转 / 纯云厂商的优势</h3>
+      <table>
+        <thead>
+          <tr><th>能力</th><th>对国企意味着什么</th><th>网关如何体现</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>政府背景支持</td><td>沟通路径清楚，便于进入既有信息化与试点框架，降低「不知名中转」的一票否决</td><td>对外以正规企业服务商身份提供调度，不包装成无主体的 API 店铺</td></tr>
+          <tr><td>对公与票据</td><td>合同、专票、部门成本中心是采购刚需</td><td>一个入口出账，按租户 / 项目 / Key 下钻，支持开票与回款核销</td></tr>
+          <tr><td>授权渠道</td><td>避免号池、账号拆分、模型掺水等被公开提示过的风险</td><td>只接入已签约的原厂、托管或合规聚合渠道；模型卡片标明来源与备案 / 出境属性</td></tr>
+          <tr><td>集团治理</td><td>多法人、多预算科目、最小权限</td><td>企业 / 部门 / 项目 / 成员四级隔离；Key 级模型白名单、额度和 IP 策略</td></tr>
+          <tr><td>本地交付</td><td>系统要进现有 OA、安防、知识库，而不是只给一段 SDK</td><td>网关保持 OpenAI 兼容，实施团队按项目对接，形成「调度 + 落地」闭环</td></tr>
+          <tr><td>可升级的政务账本</td><td>后续若出现区级补贴或多部门监管，不必换平台</td><td>同一套计量内核可升级为选项 A / B，而不是再造一套系统</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">说明：本文所称「政府背景支持」按内部既定合作与支持关系表述，不虚构具体主管单位、牌照或背书文件。区县级政策兑付仅作为开通组合示例。对外材料以法务审定的表述为准。</div>
+      <h3>网关对国企客户的默认策略</h3>
+      <div class="grid3">
+        <div class="card"><h4>境内优先</h4><p>敏感数据租户默认只开放境内授权模型；境外模型不进入一期目录，也不进入可补贴白名单。</p></div>
+        <div class="card"><h4>失败可切换、来源可证明</h4><p>同模型至少准备两家授权渠道；健康探测后自动降权，账单可回查渠道而不是黑盒。</p></div>
+        <div class="card"><h4>先预检再出站</h4><p>余额、授信或补贴额度不足直接返回明确错误，避免请求打到上游后产生无法解释的成本。</p></div>
+      </div>
+    </section>
+
+    <section id="s3">
+      <div class="sec-id">03 · 选项</div>
+      <h2>建设与开通选项</h2>
+      <p>底座必选，政务能力按需叠加。所有租户共享同一套网关与租户模型，差别只在账本口径和是否运行补贴流程。</p>
+      <div class="grid3">
+        <div class="card">
+          <h4>底座 · 必选</h4>
+          <p>统一调度网关：一个账号、一个 API Key 调用授权模型；智能路由把简单任务分给更合适的模型；企业子账号与基础用量展示。</p>
+        </div>
+        <div class="card featured">
+          <h4>选项 A · 政务级计量结算 <span class="badge">OPTIONAL</span></h4>
+          <p>把每一次调用变成可复核的财政与企业账单：五维计量、价格版本不可回改、三账户、三方对账、对公开票，日志按政务口径留存。</p>
+        </div>
+        <div class="card featured">
+          <h4>选项 B · 补贴发放通道 <span class="badge">OPTIONAL</span></h4>
+          <p>把算力或模型使用支持从线下拨付改成「申报—审核—额度到账—调用抵扣—复盘」。依赖选项 A，没有可信计量就不能自动兑付。</p>
+        </div>
+      </div>
+      <h3>三种开通组合</h3>
+      <div class="grid3">
+        <div class="card">
+          <h4>组合 1 · 企业调度版</h4>
+          <p>只开通统一调度网关与企业基础出账。适合种子验证、入驻企业和现有集成客户先用起来。</p>
+          <div class="depend">底座</div>
+        </div>
+        <div class="card">
+          <h4>组合 2 · 治理结算版</h4>
+          <p>网关 + 政务级计量结算。满足国企分摊、对公开票、用量审计，但暂不运行补贴政策。</p>
+          <div class="depend">底座 + 选项 A</div>
+        </div>
+        <div class="card">
+          <h4>组合 3 · 政策兑付版</h4>
+          <p>在计量账本之上开通补贴发放通道，形成政策、申报、抵扣、监管闭环。区县算力补贴场景（例如青浦需求梳理中的兑付形态）走这一档，而不是另做一套系统。</p>
+          <div class="depend">底座 + 选项 A + 选项 B</div>
+        </div>
+      </div>
+      <h3>选项 A 开通后增加的能力</h3>
+      <ul>
+        <li>五维计量：企业 / 部门 / 员工 / API Key / 模型与时段。</li>
+        <li>输入、输出分开计价，缓存命中单独记账，价格版本不可回改。</li>
+        <li>三账户并行：现金余额 / 政府补贴额度 / 赠送额度；补贴与现金必须分账、可单独出账和核销。</li>
+        <li>日账单、月账单；平台计量、上游账单、企业确认三方对账。</li>
+        <li>对公转账、电子发票；请求级留痕，政务口径日志留存建议 3 年。</li>
+        <li>异常烧钱告警、敏感词过滤，满足审计抽查；需要时再叠加驾驶舱、等保与国密等配套要求。</li>
+      </ul>
+      <h3>选项 B 开通后增加的能力</h3>
+      <ul>
+        <li>按企业类型配置额度，例如高新、专精特新、规上、初创等（具体类型以书面政策为准）。</li>
+        <li>按模型倾斜：国产授权模型可设更高补贴比例，引导信创方向使用。</li>
+        <li>企业在线提交资质 → 主管部门在线审核 → 额度自动入账。</li>
+        <li>调用时自动抵扣补贴，现金与补贴分账，余额 / 已用 / 剩余透明。</li>
+        <li>可限定场景与模型白名单；境外通道即使底座可接，也不进入补贴抵扣。</li>
+        <li>监管侧可看发放总额、发放对象、使用场景和异常，便于复盘。</li>
+      </ul>
+      <div class="callout warn">选项 B 必须有书面政策、审核权限和资金渠道后才能开通。补贴白名单默认只含国产授权模型。不把尚未确认的机关名称写进对外材料。</div>
+    </section>
+
+    <section id="s4">
+      <div class="sec-id">04 · 收入</div>
+      <h2>收入结构</h2>
+      <table>
+        <thead>
+          <tr><th>角色</th><th>提供什么</th><th>平台如何赚钱</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>模型原厂</td><td>官方 API 与能力</td><td>在已签约前提下，可能有渠道折扣或承诺消费返点（不作对外主卖点）</td></tr>
+          <tr><td>推理托管 / 合规聚合</td><td>开源托管、多模型入口</td><td>多渠道择优带来的成本优化，作为服务费的成本基础</td></tr>
+          <tr><td>本平台</td><td>调度、治理、结算、选型、落地；可选政务账本与补贴通道</td><td>平台服务费或年框 + 实施项目；价差为辅。政务选项按实施与运维单独计价</td></tr>
+          <tr><td>企业客户</td><td>真实调用与预算</td><td>—</td></tr>
+          <tr><td>政策资金（仅组合 3）</td><td>按政策核发的使用额度</td><td>资金本身不是平台收入；平台只收通道建设、审核流与运维服务费</td></tr>
+        </tbody>
+      </table>
+      <div class="grid3">
+        <div class="card">
+          <h4>收入一：平台 / 技术服务费（主）</h4>
+          <p>按实际消耗收取约 8%–15%，或折成年框。对应账单、发票、预算、SLA 与支持。不随上游降价等比例消失，且便于国企审计「买的是服务」。</p>
+        </div>
+        <div class="card">
+          <h4>收入二：集采附带价差（辅）</h4>
+          <p>同一模型多渠道仍可能有价差，但对外采用可审计口径：成本可见或合同内可核对，避免「加价黑盒」。倒挂时自动告警或停售新增开通。</p>
+        </div>
+        <div class="card">
+          <h4>收入三：落地实施与政务选项（独立）</h4>
+          <p>选型咨询、系统对接、专属实例，以及选项 A / B 的账本、审核流、驾驶舱按项目或年框。须单独核算，避免拖垮 SaaS 交付节奏。</p>
+        </div>
+      </div>
+      <p class="muted">主要成本仍是上游采购、发票税负、对账人力、失败重试产生的无效消耗。技术服务、转售与财政补贴核销的税目和科目不同，必须在合同前与财务确认。</p>
+    </section>
+
+    <section id="s5">
+      <div class="sec-id">05 · 产品</div>
+      <h2>功能架构：同一套模块，按组合启用</h2>
+      <p>三个使用面不变：平台运营端、企业管理端、调用面。政务组合再加监管侧看板。优先级仍按「能不能合规地收到钱、能不能把账说清楚」排列。</p>
+      <table>
+        <thead>
+          <tr><th>#</th><th>模块</th><th>核心能力</th><th>优先级</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>渠道接入与渠道池</td><td>只纳授权渠道；密钥 / 额度 / 限速；健康探测；比价</td><td>P0 · 底座</td></tr>
+          <tr><td>2</td><td>统一 API 网关</td><td>OpenAI 兼容、协议转换、路由与故障转移、限流、流式透传、请求可追溯</td><td>P0 · 底座</td></tr>
+          <tr><td>3</td><td>企业多租户与权限</td><td>企业 / 部门 / 项目 / 成员；RBAC；Key 分级；审计日志；国企可后补 SSO</td><td>P0 · 底座</td></tr>
+          <tr><td>4</td><td>计量与计费</td><td>输入输出分离、缓存命中、价格版本、倍率、实时余额</td><td>P0 · 底座</td></tr>
+          <tr><td>5</td><td>结算与对账</td><td>预付钱包、后付授信、日 / 月账单、上游核对、开票、回款</td><td>P0 · 底座</td></tr>
+          <tr><td>6</td><td>模型目录与合规标签</td><td>能力、上下文、单价、SLA、备案、出境属性、渠道来源</td><td>P0 · 底座</td></tr>
+          <tr><td>7</td><td>需求工单与售前协同</td><td>客户提需求 → 顾问补方案 → 转订单</td><td>P1</td></tr>
+          <tr><td>8</td><td>模型选型引擎</td><td>表单 + 硬约束 + 多维打分 + 三套方案；效果回流后置</td><td>表单版 P0</td></tr>
+          <tr><td>9</td><td>经营与毛利监控</td><td>客户健康度、毛利率、倒挂预警、异常调用</td><td>P1</td></tr>
+          <tr><td>10</td><td>政务级计量结算</td><td>三账户、政务口径留痕、三方对账、分账开票、监管驾驶舱</td><td>可选项 A</td></tr>
+          <tr><td>11</td><td>补贴发放通道</td><td>政策配置、申报审核、额度入账、自动抵扣、监管复盘</td><td>可选项 B（依赖 A）</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s6">
+      <div class="sec-id">06 · 流程</div>
+      <h2>五条核心流程</h2>
+      <h3>A. 企业从入驻到第一次调用</h3>
+      <div class="flow">
+        <div class="step"><b>A1 线索</b>行业、预估用量、对接人</div><span class="arrow">→</span>
+        <div class="step"><b>A2 资质</b>执照、开票、合同主体</div><span class="arrow">→</span>
+        <div class="step"><b>A3 开通</b>租户、管理员、预算、可用模型</div><span class="arrow">→</span>
+        <div class="step"><b>A4 入账</b>预付到账或激活授信</div><span class="arrow">→</span>
+        <div class="step"><b>A5 试跑</b>创建 Key，调试台首呼</div><span class="arrow">→</span>
+        <div class="step"><b>A6 计量</b>当天可见用量曲线</div>
+      </div>
+      <h3>B. 需求提报 → 选型 → 落地</h3>
+      <p>客户填结构化表单（场景、任务、语言、上下文、日均量、QPS、预算、数据敏感级、部署形态）。系统做硬约束过滤后输出省钱 / 均衡 / 高质量三套方案。顾问在一个工作日内补充说明与试用额度。一期不做自由文本 LLM 解析，保证结果可复算、可解释，便于国企评审。</p>
+      <h3>C. 调用 → 计量 → 结算</h3>
+      <p>鉴权与余额预检 → 按成本与健康度选择授权渠道 → 流式转发并异步计量 → 按请求当时的价格版本入账（request_id 幂等）→ 日结月结 → 平台计量、上游账单、客户确认三方对账，差异超过 0.5% 出核查工单。开通选项 A 后，同一笔调用同时写入现金 / 补贴 / 赠送账户规则。</p>
+      <h3>D. 上游变价时的毛利保护</h3>
+      <p>新价格只产生新版本，历史账单不改。系统重算在售模型毛利率，低于阈值告警，低于零对新增客户停售。调价、切渠道或推荐替代需提前在控制台公告，账单标注价格版本。</p>
+      <h3>E. 补贴申报 → 抵扣 → 复盘 <span class="badge">选项 B</span></h3>
+      <div class="flow">
+        <div class="step"><b>E1 政策</b>额度、对象、模型白名单</div><span class="arrow">→</span>
+        <div class="step"><b>E2 申报</b>企业提交资质</div><span class="arrow">→</span>
+        <div class="step"><b>E3 审核</b>主管部门在线审批</div><span class="arrow">→</span>
+        <div class="step"><b>E4 入账</b>额度进入补贴账户</div><span class="arrow">→</span>
+        <div class="step"><b>E5 抵扣</b>调用时自动分账</div><span class="arrow">→</span>
+        <div class="step"><b>E6 复盘</b>发放、使用、异常可追溯</div>
+      </div>
+    </section>
+
+    <section id="s7">
+      <div class="sec-id">07 · 选型</div>
+      <h2>模型选型引擎</h2>
+      <p>选型仍是获客钩子，但一期定位是「把售前从报价单变成可复核的方案书」，而不是不可复制的算法壁垒。权重由客户选择省钱 / 均衡 / 质量策略，合规维度设下限，不允许为省钱把不可用模型选进来。</p>
+      <p>输出必须同时写清三件事：相对现状或「全用高端模型」能省多少；迁移是改一个接口地址还是要重写提示词与工具链；以及质量、供应商单点和价格变动风险。</p>
+      <p class="muted">效果回流和月度复评放在二期。若开通选项 B，选型结果还需标明该方案是否落在可补贴模型白名单内，避免企业按补贴预期选了不能抵扣的模型。</p>
+    </section>
+
+    <section id="s8">
+      <div class="sec-id">08 · 账本</div>
+      <h2>计量与结算</h2>
+      <p>底座账本服务所有组合。选项 A 只是把同一套规则升级到政务可审计口径，而不是换一套计费引擎。</p>
+      <table>
+        <thead>
+          <tr><th>#</th><th>规则</th><th>原因</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>输入与输出分开计价</td><td>输出单价通常显著高于输入</td></tr>
+          <tr><td>2</td><td>缓存命中单独折扣</td><td>不区分等于把成本优势送给客户或自己吃亏</td></tr>
+          <tr><td>3</td><td>多模态按各自单位计</td><td>图 / 音 / 视频往往不按 token 计价</td></tr>
+          <tr><td>4</td><td>以请求发生时的价格版本为准</td><td>月中调价不可追溯已发生调用</td></tr>
+          <tr><td>5</td><td>上游无 usage 时估算并打标</td><td>对账时优先核查这类记录</td></tr>
+          <tr><td>6</td><td>上游失败不计费，平台重试自行承担</td><td>不能把平台容灾成本转嫁客户</td></tr>
+          <tr><td>7</td><td>同一 request_id 幂等扣费</td><td>队列重放不得重复扣款</td></tr>
+          <tr><td>8</td><td>现金、补贴、赠送分账户记账（选项 A）</td><td>财政资金与企业自付不能混在一张不可分的账单里</td></tr>
+        </tbody>
+      </table>
+      <p>默认预付钱包，签约的中大型国企可开后付授信（30 / 60 天）或年框。账本只追加，调整用反向流水冲正。底座明细至少保留 12 个月；开通选项 A 后按政务口径延长留存（建议 3 年），支持按部门、Key、模型解释每一笔，并标明是否命中补贴。</p>
+    </section>
+
+    <section id="s9">
+      <div class="sec-id">09 · 技术</div>
+      <h2>技术架构与选型</h2>
+      <p>原则不变：网关和计费自己掌控，管理端快速搭建。能买的不写，能二开的不从零造。若已有文档类 AI 中台或 LiteLLM 一类网关，应复用而不是再铺一套。政务选项复用同一计量内核和明细库，只增加账户科目、审核流与监管查询，不复制第二套网关。</p>
+      <table>
+        <thead>
+          <tr><th>层</th><th>职责</th><th>建议</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>接入</td><td>HTTPS、WAF、第一道限流</td><td>云负载均衡 + WAF；api 与 console 域名分离</td></tr>
+          <tr><td>网关</td><td>鉴权、转换、路由、流式、取用量</td><td>MVP 基于 MIT 许可开源网关二开；水平扩展；不在此阻塞写库</td></tr>
+          <tr><td>业务</td><td>租户、计费、结算、选型、工单；可选三账户与补贴审核</td><td>模块化单体起步，选项以开关和权限启用</td></tr>
+          <tr><td>异步</td><td>用量入库、账单、告警、额度抵扣</td><td>队列 + 消费者，计量不拖垮首字延迟</td></tr>
+          <tr><td>数据</td><td>业务库、明细库、缓存、对象存储</td><td>PostgreSQL + ClickHouse + Redis + OSS</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">AGPL 许可的网关用于对外 SaaS 前必须做法务结论。MVP 优先 MIT 许可方案。上游密钥走 KMS，企业 Key 只存哈希。等保、国密、信创作为政务组合的配套要求按项目评估，不写进所有商业租户的默认范围。</div>
+    </section>
+
+    <section id="s10">
+      <div class="sec-id">10 · 落地</div>
+      <h2>实施路线</h2>
+      <table>
+        <thead>
+          <tr><th>阶段</th><th>周期</th><th>交付</th><th>验收</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>一期 MVP · 企业调度版</td><td>约 6–8 周</td><td>3 家授权上游；统一网关；账本与预付；企业端与运营端各 6 页；表单选型</td><td>开通到出账全链路跑通；与上游对账连续 30 天差异稳定在约定阈值内；至少 1 家真实客户（优先国企或现有集成客户）可用</td></tr>
+          <tr><td>二期 · 治理结算版可开通</td><td>约 6–8 周</td><td>后付与授信、发票回款、RBAC 与审计加强、毛利看板、工单；选项 A 三账户与分账开票</td><td>至少 3 家客户完成完整结算周期；如有国企试点，部门分摊与专票链路可复核</td></tr>
+          <tr><td>三期 · 政策兑付版按需</td><td>约 6–8 周</td><td>智能路由、评测回流；若已有书面政策，再开通选项 B 的申报、审核、抵扣与复盘</td><td>路由在质量不降的前提下降低平均成本；补贴闭环仅在政策与授权齐全后验收，不提前承诺</td></tr>
+        </tbody>
+      </table>
+      <p>三条线必须并行，不要等开发结束再谈商务：上游授权与开票口径、开源网关技术验证、2–3 家种子客户的真实场景。账单与对账单独指定责任人。政务选项另需要政策文本、审核主体和资金渠道，不列入一期验收。</p>
+    </section>
+
+    <section id="s11">
+      <div class="sec-id">11 · 风险</div>
+      <h2>风险与合规</h2>
+      <table>
+        <thead>
+          <tr><th>风险</th><th>应对</th><th>等级</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>上游转售未授权</td><td>逐家签渠道协议；合同写明上游变更时的替代与免责</td><td>高</td></tr>
+          <tr><td>被当成灰产中转</td><td>不用「Token 交易」对外表述；只走授权渠道；可说明渠道来源；禁止号池</td><td>高</td></tr>
+          <tr><td>价格倒挂</td><td>每日重算毛利；阈值告警；合同保留调价权</td><td>高</td></tr>
+          <tr><td>补贴与现金混账</td><td>选项 A 强制三账户；选项 B 未授权不开通；发票税目与财政科目事先写死</td><td>高</td></tr>
+          <tr><td>数据出境与生成式服务备案</td><td>模型打标；敏感租户默认境内；境外模型不进补贴白名单；日志按规定留存</td><td>中高</td></tr>
+          <tr><td>发票税目</td><td>签约前与财务确认技术服务、转售或补贴核销口径</td><td>中</td></tr>
+          <tr><td>客户集中度</td><td>监控 Top 客户收入占比，避免单一项目绑架现金流</td><td>中</td></tr>
+        </tbody>
+      </table>
+      <p>一条不能碰的线：不做号池、不借用他人身份、不拆分非授权境外账号，也不把尚未落地的机关名义写进对外方案。</p>
+    </section>
+
+    <section id="s12">
+      <div class="sec-id">12 · 决策</div>
+      <h2>待确认决策</h2>
+      <table>
+        <thead>
+          <tr><th>问题</th><th>v1.2 建议</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>首期开哪一档</td><td>种子阶段先上企业调度版；有明确国企审计需求再开治理结算版；有书面补贴文件后再开政策兑付版</td></tr>
+          <tr><td>首发上游</td><td>1 家国产原厂 + 1 家推理托管 + 1 家已获授权的聚合，先签协议再接技术</td></tr>
+          <tr><td>网关路径</td><td>MVP 用 MIT 开源网关二开，复用已有中台能力；二期再评估自研深度</td></tr>
+          <tr><td>结算</td><td>默认预付；国企大客户可开授信或年框；政务组合必须现金与补贴分账</td></tr>
+          <tr><td>选型一期范围</td><td>只做表单 + 规则打分</td></tr>
+          <tr><td>境外模型</td><td>一期不接；即使后期底座可接，也不进入补贴抵扣范围</td></tr>
+          <tr><td>定价</td><td>服务费为主，价格对齐授权市场；选项 A / B 按实施与运维单独报价</td></tr>
+          <tr><td>种子客户</td><td>现有安防 / IT 集成客户中有 AI 需求的 2–3 家，并优先验证一家国企采购路径</td></tr>
+          <tr><td>补贴审核主体</td><td>在书面授权明确前不预设具体机关名称，也不对外承诺已经接通某主管部门</td></tr>
+          <tr><td>团队</td><td>2 后端 + 1 前端 + 0.5 测试，产品兼任；对账指定专人负责，不与网关开发混岗</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      企业级大模型调度与用量治理平台 · 方案 v1.2 · 上海领意 · 2026-11-06<br />
+      本文件由内部方案 v1.1 与青浦需求梳理稿合并，供内部讨论，不作为对任何主管机关或客户的正式承诺。
+    </footer>
   </div>
-</section>
-
-<footer>
-  青浦区企业级算力 Token 聚合调度与补贴监管平台 · 需求梳理 v0.2
-</footer>
-
-<script>
-  // 成本对比柱状图（示意数据）
-  var chart = echarts.init(document.getElementById('costChart'));
-  chart.setOption({
-    title:{text:'单任务 token 成本对比（示意）',left:'center',textStyle:{fontSize:14,color:'#0B2545',fontWeight:600}},
-    tooltip:{trigger:'axis'},
-    legend:{bottom:0,textStyle:{fontSize:12}},
-    grid:{left:50,right:30,top:50,bottom:50},
-    xAxis:{type:'category',data:'客服问答 文档摘要 代码生成 法律推理 科研分析'.split(' '),
-      axisLabel:{fontSize:12,color:'#475569'}},
-    yAxis:{type:'value',name:'相对成本（元）',axisLabel:{color:'#475569'}},
-    series:[
-      {name:'全部走贵模型（GPT-4o / o1）',type:'bar',data:[1.20,2.80,4.50,8.20,12.60],
-        itemStyle:{color:'#D97706',borderRadius:[4,4,0,0]}},
-      {name:'智能路由调度后',type:'bar',data:[0.18,0.72,1.50,3.10,5.80],
-        itemStyle:{color:'#047857',borderRadius:[4,4,0,0]}}
-    ]
-  });
-  window.addEventListener('resize',function(){chart.resize();});
-</script>
 </body>
 </html>
